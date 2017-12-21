@@ -25,7 +25,7 @@ exec dbo.spMarketBasket @TransactionTable = N'select OrderNo, idItem, Quantity f
 
 
 CREATE PROCEDURE [dbo].[spMarketBasket]
-	@TransactionTable nvarchar(max) = N'select OrderNo, I.idItem, Quantity from infopool.fact.v_sales',
+	@TransactionTable nvarchar(max) = N'select OrderNo, I.idItem, Quantity from transactions',
 	@Source varchar(500) = 'ERP',
 	@Algorithm varchar(500) = 'apriori',
 	@Support float = 0.00001,
