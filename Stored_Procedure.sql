@@ -2,7 +2,7 @@
 
 @TransactionTable = Table with 3 columns in the form of TransactionID, Item and Measure
 @Source = Key to identify
-@Algorithm = apriori oder eclat (eclat is slower but mor scalable)
+@Algorithm = apriori or eclat (eclat is slower but more scalable)
 @Support = a numeric value for the minimal support of an item set (default: 0.00001)
 @Confidence = a numeric value for the minimal confidence of rules/association hyperedges (default: 0.5)
 
