@@ -24,16 +24,16 @@ exec dbo.spMarketBasket @TransactionTable = N'select OrderNo, idItem, Quantity f
 */
 
 
-ALTER PROCEDURE [dbo].[spMarketBasket]
-    @TransactionTable nvarchar(max) = N'select OrderNo, I.idItem, Quantity from infopool.fact.v_sales',
-    @Source varchar(500) = 'CRH-Trade',
+CREATE PROCEDURE [dbo].[spMarketBasket]
+	@TransactionTable nvarchar(max) = N'select OrderNo, I.idItem, Quantity from infopool.fact.v_sales',
+	@Source varchar(500) = 'ERP',
 	@Algorithm varchar(500) = 'apriori',
 	@Support float = 0.00001,
 	@Confidence float = 0.5
 AS
 
 
-SET @TransactionTable = isnull(@TransactionTable, 'select OrderNo, I.idItem, Quantity from infopool.fact.v_sales')
+SET @TransactionTable = isnull(@TransactionTable, 'select OrderNo, I.idItem, Quantity from transactions')
 SET @Source = isnull(@Source, 'ERP)
 SET @Algorithm = lower(isnull(@Algorithm, 'apriori'))
 SET @Support = isnull(@Support, 0.00001)
@@ -41,7 +41,6 @@ SET @Confidence = isnull(@Confidence, 0.5)
 
 DECLARE @SupportString varchar(500) = cast(@Support as varchar(500))
 DECLARE @ConfidenceString varchar(500) = cast(@Confidence as varchar(500))
-
 
 DECLARE @rscript nvarchar(max)
 DECLARE @variables nvarchar(max)
@@ -88,23 +87,21 @@ SET @rscript = N'
 
 		itemsets <- tr %>%
 			apriori(parameter = list(target = "rules",
-											support=Support,
-											confidence=Confidence,
-											minlen = 2,
-											maxlen=2))
+						support=Support,
+						confidence=Confidence,
+						minlen = 2,
+						maxlen=2))
 		quality(itemsets)$lift <- interestMeasure(itemsets, measure="lift", trans = itemsets)
 	
 	} else if (Algorithm == "eclat"){
 
 		itemsets <- tr %>%
 			eclat(parameter = list( support=Support,
-									minlen = 2, maxlen=2)) %>%
+						minlen = 2, maxlen=2)) %>%
 			ruleInduction(tr, confidence = Confidence)
 
 	} else {
-
 		stop("No or unsupported Algorithm declared")
-
 	}
 
 	DT <- data.table(
@@ -126,19 +123,18 @@ SET @rscript = N'
 
 SET @rscript = @variables + @rscript
 
-
 EXECUTE sp_execute_external_script
 	@language = N'R'
 	,@script = @rscript
 	,@input_data_1 = @TransactionTable
 	,@input_data_1_name  = N'DT'
 	,@output_data_1_name =  N'DT'
-	WITH RESULT SETS (( [source] varchar(5000) NULL,
-						[antecedants] varchar(5000) NULL,
-						[consequents] varchar(5000) NULL,
-						[support] float,
-						[confidence] float,
-						[lift] float));
+	WITH RESULT SETS ((     [source] varchar(5000) NULL,
+				[antecedants] varchar(5000) NULL,
+				[consequents] varchar(5000) NULL,
+				[support] float,
+				[confidence] float,
+				[lift] float));
 
 
 
